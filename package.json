@@ -1,0 +1,20 @@
+{
+  "name": "mh-better-spooky-shuffle-tracker",
+  "version": "0.0.0",
+  "description": "",
+  "main": "mh-better-spooky-shuffle-tracker.user.js",
+  "scripts": {
+    "lint:js": "npx eslint *.js -c .eslintrc.json",
+    "lint:js:fix": "npx eslint *.js -c .eslintrc.json --fix",
+    "lint:md": "eslint *.md -c .eslintrc.json",
+    "lint": "npm run lint:js && npm run lint:md",
+    "lint:fix": "npm run lint:js:fix"
+  },
+  "author": "Brad Parbs <brad@bradparbs.com> (https://bradparbs.com/)",
+  "license": "MIT",
+  "devDependencies": {
+    "@wordpress/eslint-plugin": "^12.9.0",
+    "eslint": "^8.16.0",
+    "eslint-plugin-markdownlint": "^0.4.0"
+  }
+}
