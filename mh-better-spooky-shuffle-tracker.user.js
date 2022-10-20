@@ -120,6 +120,21 @@
 
 		if (req.memory_game.is_complete) {
 			localStorage.removeItem('mh-spooky-shuffle-cards');
+			const shownCards = document.querySelectorAll('.halloweenMemoryGame-card-flipper');
+			if (shownCards) {
+				shownCards.forEach((card) => {
+					card.style.background = '';
+				});
+			}
+
+			const cardFronts = document.querySelectorAll('.mh-spooky-shuffle-card-front');
+			if (cardFronts) {
+				cardFronts.forEach((card) => {
+					card.style.background = '';
+					card.classList.remove('mh-spooky-shuffle-card-front');
+				});
+			}
+
 			return;
 		}
 
