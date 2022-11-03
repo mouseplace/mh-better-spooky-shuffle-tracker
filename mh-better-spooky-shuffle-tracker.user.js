@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.2.0
+// @version      1.2.2
 // @description  Play Spooky Shuffle more easily.
 // @license      MIT
 // @author       bradp, asterios
@@ -9,18 +9,6 @@
 // @icon         https://brrad.com/mouse.png
 // @grant        none
 // @run-at       document-end
-// ==/UserScript==
-
-// ==UserScript==
-// @name         🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.1.2
-// @description  Play Spooky Shuffle more easily.
-// @license      MIT
-// @author       bradp
-// @namespace    bradp
-// @match        https://www.mousehuntgame.com/*
-// @icon         https://brrad.com/mouse.png
-@@ -12,154 +12,233 @@
 // ==/UserScript==
 
 ((function () {
