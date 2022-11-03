@@ -1,19 +1,19 @@
 // ==UserScript==
-// @name         🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.2.2
+// @name		 🐭️ MouseHunt - Better Spooky Shuffle Tracker
+// @version	  1.2.7
 // @description  Play Spooky Shuffle more easily.
-// @license      MIT
-// @author       bradp, asterios
-// @namespace    bradp
-// @match        https://www.mousehuntgame.com/*
-// @icon         https://brrad.com/mouse.png
-// @grant        none
-// @run-at       document-end
+// @license	  MIT
+// @author	   bradp, asterios
+// @namespace	bradp
+// @match		https://www.mousehuntgame.com/*
+// @icon		 https://brrad.com/mouse.png
+// @grant		none
+// @run-at	   document-end
 // ==/UserScript==
 
 ((function () {
 	'use strict';
-	let debug = false;
+	const debug = false;
 	/**
 	 * Add styles to the page.
 	 *
@@ -36,8 +36,8 @@
 	/**
 	 * Do something when ajax requests are completed.
 	 *
-	 * @param {Function} callback    The callback to call when an ajax request is completed.
-	 * @param {string}   url         The url to match. If not provided, all ajax requests will be matched.
+	 * @param {Function} callback	The callback to call when an ajax request is completed.
+	 * @param {string}   url		 The url to match. If not provided, all ajax requests will be matched.
 	 * @param {boolean}  skipSuccess Skip the success check.
 	 */
 	const onAjaxRequest = (callback, url = null, skipSuccess = false) => {
@@ -80,24 +80,27 @@
 		// count null card names
 		let nullCt = 0;
 		board.cards.forEach((card) => {
-		    if(card.name == null) nullCt++;
+			if (card.name === null) {
+				nullCt++;
+			}
 		});
 
 		// check matching ticket count from last ticket count in localStorage, saved at last completion + 18 null card names
 		if (req.memory_game.num_tickets != localStorage.getItem('mh-spooky-shuffle-cached-tickets')) {
-		    console.log("Rejected as ticket count changed");
-		    return false;
+			debug ? console.log(req.memory_game.num_tickets) : null;
+			debug ? console.log(localStorage.getItem('mh-spooky-shuffle-cached-tickets')) : null;
+			console.log('Rejected as ticket count changed');
+			return false;
 		}
-		else if (nullCt == 18) {
-		    debug ? console.log("New board") : null;
-		    return true;
-		}
-		else {
-		    debug ? console.log("Not new board") : null;
-		    return false;
+		else if (nullCt === 18) {
+			console.log('New board detected');
+			return true;
+		} else {
+			debug ? console.log('Not new board') : null;
+			return false;
 		}
 	}
-    
+
 	const renderSavedCard = (card) => {
 		if (! card) {
 			return;
@@ -142,60 +145,92 @@
 	const saveBoard = (board, savedBoards) => {
 		let boardId = Object.keys(savedBoards).length || 0;
 		savedBoards[ boardId ] = board;
-		
+
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
-		debug ? console.log("Board saved:") : null;
-		debug ? console.log(board) : null;
-		
+		console.log('Board saved:');
+		console.log(board);
+
 		return savedBoards;
 	};
-	
+
+	const stripCardTestedPair = (cards) => {
+		cards.forEach((card) => {
+			delete card['is_tested_pair'];
+		});
+
+		return cards;
+	};
+
 	onAjaxRequest((req) => {
 		if (! (req && req.memory_game)) {
 			return;
 		}
-		
+
 		const savedBoards = getSavedBoards();
 		const currentBoard = {
-		    is_upgraded: req.memory_game.is_upgraded,
-		    is_complete: req.memory_game.is_complete,
-		    title_range: req.memory_game.title_range,
-		    cards: req.memory_game.cards,
+			is_upgraded: req.memory_game.is_upgraded,
+			is_complete: req.memory_game.is_complete,
+			title_range: req.memory_game.title_range,
+			cards: stripCardTestedPair(req.memory_game.cards),
 		}
-		debug ? console.log("Current board:") : null;
+		debug ? console.log('Current board:') : null;
 		debug ? console.log(currentBoard) : null;
 
 		// save ticket start count for tickets_used calculation for new boards
 		if (isNewBoard(currentBoard, req)){
-		    localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
+			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
 		}
-		
+
+		const prevBoard = savedBoards[Object.keys(savedBoards).length - 1] || 0;
+		debug ? console.log('Previous board:') : null;
+		debug ? console.log(prevBoard) : null;
+
+		// save new complete boards
 		if (req.memory_game.is_complete) {
-			currentBoard.num_tickets_start = parseInt(localStorage.getItem('mh-spooky-shuffle-cached-start-tickets')) || null;
 			currentBoard.num_tickets_end = req.memory_game.num_tickets;
-			if (!currentBoard.num_tickets_start) {
-				currentBoard.tickets_used = null;
-			}
-			else {
-				currentBoard.tickets_used = currentBoard.num_tickets_start - currentBoard.num_tickets_end;
+
+			if (debug) {
+				let cC = currentBoard.cards;
+				let pC = prevBoard.cards;
+				console.log(cC);
+				console.log(pC);
+				let cCJ = JSON.stringify(cC);
+				let pCJ = JSON.stringify(pC);
+				console.log(cCJ == pCJ);
 			}
 
-			if (JSON.stringify(currentBoard) == JSON.stringify(prevBoard)) {
-				console.log("Rejected duplicate board");
+			if (
+				currentBoard.is_upgraded == prevBoard.is_upgraded
+				&& currentBoard.is_complete == prevBoard.is_complete
+				&& currentBoard.title_range == prevBoard.title_range
+				&& JSON.stringify(currentBoard.cards) == JSON.stringify(prevBoard.cards)
+				&& currentBoard.num_tickets_end == prevBoard.num_tickets_end
+			) {
+				console.log('Rejected duplicate board');
 			}
 			else {
+				// only pull in this data after the duplicate check as the cached-start-tickets gets removed after saving
+				currentBoard.num_tickets_start = parseInt(localStorage.getItem('mh-spooky-shuffle-cached-start-tickets')) || null;
+				debug ? console.log(currentBoard.num_tickets_start) : null;
+				if (!currentBoard.num_tickets_start) {
+					currentBoard.tickets_used = null;
+				}
+				else {
+					currentBoard.tickets_used = currentBoard.num_tickets_start - currentBoard.num_tickets_end;
+				}
+
 				saveBoard(currentBoard, savedBoards);
 
 				// set cached tickets to see if ticket activity has occured between cache time and start of new board
 				localStorage.setItem('mh-spooky-shuffle-cached-tickets',req.memory_game.num_tickets);
-				
+
 				// remove cached start tickets so that a failed isNewBoard check doesn't allow for an older cached start ticket to be used in a tickets_used calculation for a completed currentBoard that did not pass the isNewBoard check at its start
 				localStorage.removeItem('mh-spooky-shuffle-cached-start-tickets');
 			}
-			
+
 			// back to original script
 			localStorage.removeItem('mh-spooky-shuffle-cards');
-			
+
 			const shownCards = document.querySelectorAll('.halloweenMemoryGame-card-flipper');
 			if (shownCards) {
 				shownCards.forEach((card) => {
