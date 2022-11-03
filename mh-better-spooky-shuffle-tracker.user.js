@@ -235,3 +235,21 @@
 	}, 'managers/ajax/events/spooky_shuffle.php');
 
 	addStyles(`.halloweenMemoryGame-card-container {
+		position: relative;
+	}
+
+	.mh-spooky-shuffle-card-front {
+		opacity: .75;
+	}
+
+	.mh-spooky-shuffle-card-name {
+		text-align: center;
+		position: absolute;
+		bottom: 5px;
+		width: 100px;
+		background-color: #ffcdcf;
+		border-radius: 5px;
+		box-shadow: 0px 1px 2px 1px #970707;
+		padding: 5px 0;
+	}`);
+})());
