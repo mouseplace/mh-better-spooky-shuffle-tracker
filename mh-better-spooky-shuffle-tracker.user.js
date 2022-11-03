@@ -13,7 +13,7 @@
 
 ((function () {
 	'use strict';
-	const debug = true;
+	const debug = false;
 	/**
 	 * Add styles to the page.
 	 *
@@ -93,7 +93,7 @@
 			return false;
 		}
 		else if (nullCt === 18) {
-			debug ? console.log('New board') : null;
+			console.log('New board detected');
 			return true;
 		} else {
 			debug ? console.log('Not new board') : null;
@@ -147,8 +147,8 @@
 		savedBoards[ boardId ] = board;
 
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
-		debug ? console.log("Board saved:") : null;
-		debug ? console.log(board) : null;
+		console.log('Board saved:');
+		console.log(board);
 
 		return savedBoards;
 	};
@@ -173,7 +173,7 @@
 			title_range: req.memory_game.title_range,
 			cards: stripCardTestedPair(req.memory_game.cards),
 		}
-		debug ? console.log("Current board:") : null;
+		debug ? console.log('Current board:') : null;
 		debug ? console.log(currentBoard) : null;
 
 		// save ticket start count for tickets_used calculation for new boards
@@ -182,7 +182,7 @@
 		}
 
 		const prevBoard = savedBoards[Object.keys(savedBoards).length - 1] || 0;
-		debug ? console.log("Previous board:") : null;
+		debug ? console.log('Previous board:') : null;
 		debug ? console.log(prevBoard) : null;
 
 		// save new complete boards
@@ -203,10 +203,10 @@
 				currentBoard.is_upgraded == prevBoard.is_upgraded
 				&& currentBoard.is_complete == prevBoard.is_complete
 				&& currentBoard.title_range == prevBoard.title_range
-				// && JSON.stringify(currentBoard.cards) == JSON.stringify(prevBoard.cards)
+				&& JSON.stringify(currentBoard.cards) == JSON.stringify(prevBoard.cards)
 				&& currentBoard.num_tickets_end == prevBoard.num_tickets_end
 			) {
-				console.log("Rejected duplicate board");
+				console.log('Rejected duplicate board');
 			}
 			else {
 				// only pull in this data after the duplicate check as the cached-start-tickets gets removed after saving
