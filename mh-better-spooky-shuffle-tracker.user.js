@@ -13,7 +13,7 @@
 
 ((function () {
 	'use strict';
-	let debug = false;
+
 	/**
 	 * Add styles to the page.
 	 *
@@ -77,33 +77,16 @@
 	};
 
 	const isNewBoard = (board, req) => {
-		// count null card names
-		let nullCt = 0;
-		board.cards.forEach((card) => {
-		    if(card.name == null) nullCt++;
-		});
+		// Check if all of the card names are null.
+		if (board.every((card) => card.name === null)) {
+			return true;
+		}
 
-		// check matching ticket count from last ticket count in localStorage, saved at last completion + 18 null card names
-		if (req.memory_game.num_tickets != localStorage.getItem('mh-spooky-shuffle-cached-tickets')) {
-		    console.log("Rejected as ticket count changed");
-		    return false;
-		}
-		else if (nullCt == 18) {
-		    debug ? console.log("New board") : null;
-		    return true;
-		}
-		else {
-		    debug ? console.log("Not new board") : null;
-		    return false;
-		}
-	}
-    
+		return (req.memory_game.num_tickets !== localStorage.getItem('mh-spooky-shuffle-cached-tickets'));
+	};
+
 	const renderSavedCard = (card) => {
-		if (! card) {
-			return;
-		}
-
-		if (card.is_matched) {
+		if (! card || ! card.is_matched) {
 			return;
 		}
 
@@ -115,7 +98,7 @@
 		// set the .itemImage child to the card's image
 		const cardFront = cardElement.querySelector('.halloweenMemoryGame-card-front');
 		const flipper = cardElement.querySelector('.halloweenMemoryGame-card-flipper');
-		if (! (cardFront && flipper)) {
+		if (! cardFront || ! flipper) {
 			return;
 		}
 
@@ -140,62 +123,52 @@
 	};
 
 	const saveBoard = (board, savedBoards) => {
-		let boardId = Object.keys(savedBoards).length || 0;
+		const boardId = Object.keys(savedBoards).length || 0;
 		savedBoards[ boardId ] = board;
-		
+
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
-		debug ? console.log("Board saved:") : null;
-		debug ? console.log(board) : null;
-		
+
 		return savedBoards;
 	};
-	
+
 	onAjaxRequest((req) => {
-		if (! (req && req.memory_game)) {
+		if (! req || ! req.memory_game) {
 			return;
 		}
-		
+
 		const savedBoards = getSavedBoards();
 		const currentBoard = {
-		    is_upgraded: req.memory_game.is_upgraded,
-		    is_complete: req.memory_game.is_complete,
-		    title_range: req.memory_game.title_range,
-		    cards: req.memory_game.cards,
-		}
-		debug ? console.log("Current board:") : null;
-		debug ? console.log(currentBoard) : null;
+			is_upgraded: req.memory_game.is_upgraded,
+			is_complete: req.memory_game.is_complete,
+			title_range: req.memory_game.title_range,
+			cards: req.memory_game.cards,
+		};
 
-		// save ticket start count for tickets_used calculation for new boards
-		if (isNewBoard(currentBoard, req)){
-		    localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
+		// Save ticket start count for tickets_used calculation for new boards.
+		if (isNewBoard(currentBoard, req)) {
+			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets', req.memory_game.num_tickets);
 		}
-		
+
 		if (req.memory_game.is_complete) {
 			currentBoard.num_tickets_start = parseInt(localStorage.getItem('mh-spooky-shuffle-cached-start-tickets')) || null;
 			currentBoard.num_tickets_end = req.memory_game.num_tickets;
-			if (!currentBoard.num_tickets_start) {
+			if (! currentBoard.num_tickets_start) {
 				currentBoard.tickets_used = null;
-			}
-			else {
+			} else {
 				currentBoard.tickets_used = currentBoard.num_tickets_start - currentBoard.num_tickets_end;
 			}
 
-			if (JSON.stringify(currentBoard) == JSON.stringify(prevBoard)) {
-				console.log("Rejected duplicate board");
-			}
-			else {
-				saveBoard(currentBoard, savedBoards);
+			saveBoard(currentBoard, savedBoards);
 
-				// set cached tickets to see if ticket activity has occured between cache time and start of new board
-				localStorage.setItem('mh-spooky-shuffle-cached-tickets',req.memory_game.num_tickets);
-				
-				// remove cached start tickets so that a failed isNewBoard check doesn't allow for an older cached start ticket to be used in a tickets_used calculation for a completed currentBoard that did not pass the isNewBoard check at its start
-				localStorage.removeItem('mh-spooky-shuffle-cached-start-tickets');
-			}
-			
-			// back to original script
+			// Set cached tickets to see if ticket activity has occured between cache time and start of new board.
+			localStorage.setItem('mh-spooky-shuffle-cached-tickets', req.memory_game.num_tickets);
+
+			// Remove cached start tickets so that a failed isNewBoard check doesn't allow for an older cached start ticket
+			// to be used in a tickets_used calculation for a completed currentBoard that did not pass the isNewBoard check at its start.
+			localStorage.removeItem('mh-spooky-shuffle-cached-start-tickets');
+
 			localStorage.removeItem('mh-spooky-shuffle-cards');
-			
+
 			const shownCards = document.querySelectorAll('.halloweenMemoryGame-card-flipper');
 			if (shownCards) {
 				shownCards.forEach((card) => {
@@ -210,8 +183,6 @@
 					card.classList.remove('mh-spooky-shuffle-card-front');
 				});
 			}
-
-			return;
 		}
 
 		const cardNames = document.querySelectorAll('.mh-spooky-shuffle-card-name');
