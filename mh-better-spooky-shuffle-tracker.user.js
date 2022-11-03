@@ -188,10 +188,11 @@
 
 				// set cached tickets to see if ticket activity has occured between cache time and start of new board
 				localStorage.setItem('mh-spooky-shuffle-cached-tickets',req.memory_game.num_tickets);
+				
+				// remove cached start tickets so that a failed isNewBoard check doesn't allow for an older cached start ticket to be used in a tickets_used calculation for a completed currentBoard that did not pass the isNewBoard check at its start
+				localStorage.removeItem('mh-spooky-shuffle-cached-start-tickets');
 			}
 			
-			localStorage.removeItem('mh-spooky-shuffle-cached-start-tickets');
-
 			// back to original script
 			localStorage.removeItem('mh-spooky-shuffle-cards');
 			
