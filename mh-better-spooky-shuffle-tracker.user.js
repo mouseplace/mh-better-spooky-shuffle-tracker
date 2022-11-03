@@ -171,6 +171,11 @@
 		    localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
 		}
 		
+		const prevBoard = savedBoards[Object.keys(savedBoards).length - 1] || 0;
+		debug ? console.log("Previous board:") : null;
+		debug ? console.log(prevBoard) : null;
+
+		// save new complete boards
 		if (req.memory_game.is_complete) {
 			currentBoard.num_tickets_start = parseInt(localStorage.getItem('mh-spooky-shuffle-cached-start-tickets')) || null;
 			currentBoard.num_tickets_end = req.memory_game.num_tickets;
