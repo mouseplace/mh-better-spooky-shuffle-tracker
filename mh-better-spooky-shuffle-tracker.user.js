@@ -13,7 +13,7 @@
 
 ((function () {
 	'use strict';
-	let debug = false;
+	const debug = false;
 	/**
 	 * Add styles to the page.
 	 *
@@ -80,21 +80,21 @@
 		// count null card names
 		let nullCt = 0;
 		board.cards.forEach((card) => {
-		    if(card.name == null) nullCt++;
+			if(card.name === null) nullCt++;
 		});
 
 		// check matching ticket count from last ticket count in localStorage, saved at last completion + 18 null card names
-		if (req.memory_game.num_tickets != localStorage.getItem('mh-spooky-shuffle-cached-tickets')) {
-		    console.log("Rejected as ticket count changed");
-		    return false;
+		if (req.memory_game.num_tickets !== localStorage.getItem('mh-spooky-shuffle-cached-tickets')) {
+			console.log("Rejected as ticket count changed");
+			return false;
 		}
 		else if (nullCt == 18) {
-		    debug ? console.log("New board") : null;
-		    return true;
+			debug ? console.log("New board") : null;
+			return true;
 		}
 		else {
-		    debug ? console.log("Not new board") : null;
-		    return false;
+			debug ? console.log("Not new board") : null;
+			return false;
 		}
 	}
     
