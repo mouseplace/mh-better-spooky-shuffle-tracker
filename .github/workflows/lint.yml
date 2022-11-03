@@ -2,9 +2,9 @@ name: Lint
 
 on:
   push:
-    branches: [ main ]
+    branches: [ board-saving ]
   pull_request:
-    branches: [ main ]
+    branches: [ board-saving ]
 
 jobs:
   build:
