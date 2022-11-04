@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name		 🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version	  1.2.7
+// @version      1.3.0
 // @description  Play Spooky Shuffle more easily.
-// @license	  MIT
-// @author	   bradp, asterios
-// @namespace	bradp
-// @match		https://www.mousehuntgame.com/*
+// @license	     MIT
+// @author	     bradp, asterios
+// @namespace	 bradp
+// @match		 https://www.mousehuntgame.com/*
 // @icon		 https://brrad.com/mouse.png
-// @grant		none
-// @run-at	   document-end
+// @grant		 none
+// @run-at	     document-end
 // ==/UserScript==
 
 ((function () {
@@ -143,7 +143,7 @@
 	};
 
 	const saveBoard = (board, savedBoards) => {
-		let boardId = Object.keys(savedBoards).length || 0;
+		let boardId = savedBoards.length || 0;
 		savedBoards[ boardId ] = board;
 
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
@@ -181,7 +181,7 @@
 			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
 		}
 
-		const prevBoard = savedBoards[Object.keys(savedBoards).length - 1] || 0;
+		const prevBoard = savedBoards[savedBoards.length - 1] || 0;
 		debug ? console.log('Previous board:') : null;
 		debug ? console.log(prevBoard) : null;
 
