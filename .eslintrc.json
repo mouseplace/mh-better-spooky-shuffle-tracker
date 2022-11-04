@@ -34,7 +34,7 @@
             "after": true
         }],
         "eol-last": ["error", "always"],
-        "indent": ["error", "tab"],
+        "indent": ["error", 2],
         "jsdoc/tag-lines": ["error", "always", {
             "count": 0
         }],
@@ -43,6 +43,7 @@
         "no-alert": "error",
         "no-console": "error",
         "no-eval": "error",
+        "no-undef": 0,
         "no-implied-eval":"error",
         "no-template-curly-in-string": "error",
         "no-useless-concat":"error",
@@ -55,7 +56,8 @@
             "asyncArrow": "always"
         }],
         "space-in-parens": ["error", "never"],
-        "spaced-comment": ["error", "always"]
+        "spaced-comment": ["error", "always"],
+        "template-curly-spacing": ["error", "never"]
     },
     "overrides": [{
         "files": ["*.md"],

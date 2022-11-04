@@ -1,4 +1,4 @@
-# mh-better-spooky-shuffle-tracker
+# 🐭️ MouseHunt - Better Spooky Shuffle Tracker
 
 A Userscript for [MouseHunt](https://mousehuntgame.com) that makes it easier to play Spooky Shuffle.
 
