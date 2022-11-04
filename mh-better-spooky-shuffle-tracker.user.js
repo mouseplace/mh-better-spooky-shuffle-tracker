@@ -1,14 +1,14 @@
 // ==UserScript==
-// @name		 🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.3.0
+// @name	 🐭️ MouseHunt - Better Spooky Shuffle Tracker
+// @version      1.4.0
 // @description  Play Spooky Shuffle more easily.
-// @license	     MIT
-// @author	     bradp, asterios
+// @license	 MIT
+// @author	 bradp, asterios
 // @namespace	 bradp
-// @match		 https://www.mousehuntgame.com/*
-// @icon		 https://brrad.com/mouse.png
-// @grant		 none
-// @run-at	     document-end
+// @match	 https://www.mousehuntgame.com/*
+// @icon	 https://brrad.com/mouse.png
+// @grant	 none
+// @run-at	 document-end
 // ==/UserScript==
 
 ((function () {
@@ -150,6 +150,7 @@
 		console.log('Board saved:');
 		console.log(board);
 
+		summarize();
 		return savedBoards;
 	};
 
@@ -159,6 +160,89 @@
 		});
 
 		return cards;
+	};
+
+	const summarize = () => {
+		const boards = JSON.parse(localStorage.getItem('mh-spooky-shuffle-boards'))
+		const boardKeys = ['is_upgraded','title_range','tickets_used']
+		const boardCount = {
+			is_upgraded: {'name':'Dusted'},
+			tickets_used: {'name':'Tickets Spent'},
+			title_range: {'name':'Board Rank'}
+		};
+
+		boardKeys.forEach((key) => {
+			boards.forEach((board) => {
+				if (boardCount[key][board[key]]>=0) {
+					boardCount[key][board[key]]++;
+				}
+				else {
+					// for first encounter of element, start counter at 1
+					boardCount[key][board[key]] = 1;
+				}
+			})
+		})
+
+		const ranks = {};
+		const items = {};
+		boards.forEach ((board) => {
+			let rankType = '';
+			console.log(rankType);
+			if (board.is_upgraded) {
+				rankType = 'Dusted ' + board.title_range;
+			}
+			else {
+				rankType = 'Plain ' + board.title_range;
+			}
+			if (rankType in ranks) {
+				debug ? console.log('Rank/Type already exists') : null;
+				ranks[rankType].Count++;
+			}
+			else {
+				debug ? console.log('New rank/type created') : null;
+				ranks[rankType] = {};
+				debug ? console.log(rankType) : null;
+				ranks[rankType].Count = 1;
+				ranks[rankType].Items = {};
+			}
+
+			// de-dupe card pairs per board
+			let boardCardCt = {};
+
+			board.cards.forEach ((card) => {
+				debug ? console.log(card) : null;
+
+				if (card['name'] in boardCardCt) {
+					debug ? console.log('existing item on board') : null;
+					return false;
+				}
+				else {
+					debug ? console.log('new item for board') : null;
+					boardCardCt[card['name']] = 1;
+					debug ? console.log(boardCardCt) : null;
+				}
+				const items = ranks[rankType].Items;
+				if (card['name'] in items) {
+					debug ? console.log('existing item') : null;
+					items[card['name']].count++;
+					items[card['name']].sum += card.quantity;
+				}
+				else {
+					debug ? console.log('new item') : null;
+					items[card['name']] = {};
+					items[card['name']].count = 1;
+					items[card['name']].sum = card.quantity;
+				}
+			})
+		})
+
+		console.log("Summary stats overall");
+		console.log(boardCount);
+
+		console.log("Item totals by board rank: ")
+		console.log(ranks);
+
+		return ranks;
 	};
 
 	onAjaxRequest((req) => {
