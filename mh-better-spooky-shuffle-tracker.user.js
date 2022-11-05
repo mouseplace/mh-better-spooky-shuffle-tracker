@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.4.0
+// @version      1.4.1
 // @description  Play Spooky Shuffle more easily.
 // @license	 MIT
 // @author	 bradp, asterios
@@ -13,7 +13,7 @@
 
 ((function () {
 	'use strict';
-	const debug = false;
+	const debug = true;
 	/**
 	 * Add styles to the page.
 	 *
@@ -77,22 +77,15 @@
 	};
 
 	const isNewBoard = (board, req) => {
-		// count null card names
-		let nullCt = 0;
-		board.cards.forEach((card) => {
-			if (card.name === null) {
-				nullCt++;
-			}
-		});
-
 		// check matching ticket count from last ticket count in localStorage, saved at last completion + 18 null card names
 		if (req.memory_game.num_tickets != localStorage.getItem('mh-spooky-shuffle-cached-tickets')) {
 			debug ? console.log(req.memory_game.num_tickets) : null;
 			debug ? console.log(localStorage.getItem('mh-spooky-shuffle-cached-tickets')) : null;
-			console.log('Rejected as ticket count changed');
+			debug ? console.log('Rejected as ticket count changed') : null;
 			return false;
 		}
-		else if (nullCt === 18) {
+		// Check if all of the card names are null.
+		else if (board.cards.every((card) => card.name === null)) {
 			console.log('New board detected');
 			return true;
 		} else {
@@ -102,11 +95,7 @@
 	}
 
 	const renderSavedCard = (card) => {
-		if (! card) {
-			return;
-		}
-
-		if (card.is_matched) {
+		if (! card || card.is_matched) {
 			return;
 		}
 
@@ -118,7 +107,7 @@
 		// set the .itemImage child to the card's image
 		const cardFront = cardElement.querySelector('.halloweenMemoryGame-card-front');
 		const flipper = cardElement.querySelector('.halloweenMemoryGame-card-flipper');
-		if (! (cardFront && flipper)) {
+		if (! cardFront || ! flipper) {
 			return;
 		}
 
@@ -143,7 +132,7 @@
 	};
 
 	const saveBoard = (board, savedBoards) => {
-		let boardId = savedBoards.length || 0;
+		const boardId = savedBoards.length || 0;
 		savedBoards[ boardId ] = board;
 
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
@@ -163,6 +152,7 @@
 	};
 
 	const summarize = () => {
+		const summarizeDebug = false;
 		const boards = JSON.parse(localStorage.getItem('mh-spooky-shuffle-boards'))
 		const boardKeys = ['is_upgraded','title_range','tickets_used']
 		const boardCount = {
@@ -187,7 +177,6 @@
 		const items = {};
 		boards.forEach ((board) => {
 			let rankType = '';
-			console.log(rankType);
 			if (board.is_upgraded) {
 				rankType = 'Dusted ' + board.title_range;
 			}
@@ -195,13 +184,13 @@
 				rankType = 'Plain ' + board.title_range;
 			}
 			if (rankType in ranks) {
-				debug ? console.log('Rank/Type already exists') : null;
+				summarizeDebug ? console.log('Rank/Type already exists') : null;
 				ranks[rankType].Count++;
 			}
 			else {
-				debug ? console.log('New rank/type created') : null;
+				summarizeDebug ? console.log('New rank/type created') : null;
 				ranks[rankType] = {};
-				debug ? console.log(rankType) : null;
+				summarizeDebug ? console.log(rankType) : null;
 				ranks[rankType].Count = 1;
 				ranks[rankType].Items = {};
 			}
@@ -210,25 +199,25 @@
 			let boardCardCt = {};
 
 			board.cards.forEach ((card) => {
-				debug ? console.log(card) : null;
+				summarizeDebug ? console.log(card) : null;
 
 				if (card['name'] in boardCardCt) {
-					debug ? console.log('existing item on board') : null;
+					summarizeDebug ? console.log('existing item on board') : null;
 					return false;
 				}
 				else {
-					debug ? console.log('new item for board') : null;
+					summarizeDebug ? console.log('new item for board') : null;
 					boardCardCt[card['name']] = 1;
-					debug ? console.log(boardCardCt) : null;
+					summarizeDebug ? console.log(boardCardCt) : null;
 				}
 				const items = ranks[rankType].Items;
 				if (card['name'] in items) {
-					debug ? console.log('existing item') : null;
+					summarizeDebug ? console.log('existing item') : null;
 					items[card['name']].count++;
 					items[card['name']].sum += card.quantity;
 				}
 				else {
-					debug ? console.log('new item') : null;
+					summarizeDebug ? console.log('new item') : null;
 					items[card['name']] = {};
 					items[card['name']].count = 1;
 					items[card['name']].sum = card.quantity;
@@ -246,7 +235,7 @@
 	};
 
 	onAjaxRequest((req) => {
-		if (! (req && req.memory_game)) {
+		if (! req || ! req.memory_game) {
 			return;
 		}
 
@@ -260,9 +249,9 @@
 		debug ? console.log('Current board:') : null;
 		debug ? console.log(currentBoard) : null;
 
-		// save ticket start count for tickets_used calculation for new boards
-		if (isNewBoard(currentBoard, req)){
-			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets',req.memory_game.num_tickets);
+		// Save ticket start count for tickets_used calculation for new boards.
+		if (isNewBoard(currentBoard, req)) {
+			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets', req.memory_game.num_tickets);
 		}
 
 		const prevBoard = savedBoards[savedBoards.length - 1] || 0;
@@ -296,7 +285,7 @@
 				// only pull in this data after the duplicate check as the cached-start-tickets gets removed after saving
 				currentBoard.num_tickets_start = parseInt(localStorage.getItem('mh-spooky-shuffle-cached-start-tickets')) || null;
 				debug ? console.log(currentBoard.num_tickets_start) : null;
-				if (!currentBoard.num_tickets_start) {
+				if (! currentBoard.num_tickets_start) {
 					currentBoard.tickets_used = null;
 				}
 				else {
