@@ -13,7 +13,7 @@
 
 ((function () {
 	'use strict';
-	const debug = true;
+	const debug = false;
 	/**
 	 * Add styles to the page.
 	 *
