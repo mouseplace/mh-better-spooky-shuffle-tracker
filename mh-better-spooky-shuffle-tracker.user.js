@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name	 🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.4.1
+// @version      1.5.0
 // @description  Play Spooky Shuffle more easily.
 // @license	 MIT
 // @author	 bradp, asterios
@@ -9,6 +9,7 @@
 // @icon	 https://brrad.com/mouse.png
 // @grant	 none
 // @run-at	 document-end
+// @require      https://cdnjs.cloudflare.com/ajax/libs/jquery-toast-plugin/1.3.2/jquery.toast.min.js
 // ==/UserScript==
 
 ((function () {
@@ -86,7 +87,6 @@
 		}
 		// Check if all of the card names are null.
 		else if (board.cards.every((card) => card.name === null)) {
-			console.log('New board detected');
 			return true;
 		} else {
 			debug ? console.log('Not new board') : null;
@@ -136,8 +136,6 @@
 		savedBoards[ boardId ] = board;
 
 		localStorage.setItem('mh-spooky-shuffle-boards', JSON.stringify(savedBoards));
-		console.log('Board saved:');
-		console.log(board);
 
 		summarize();
 		return savedBoards;
@@ -251,6 +249,7 @@
 
 		// Save ticket start count for tickets_used calculation for new boards.
 		if (isNewBoard(currentBoard, req)) {
+			$.toast('New board detected, current ticket count saved');
 			localStorage.setItem('mh-spooky-shuffle-cached-start-tickets', req.memory_game.num_tickets);
 		}
 
@@ -279,7 +278,7 @@
 				&& JSON.stringify(currentBoard.cards) == JSON.stringify(prevBoard.cards)
 				&& currentBoard.num_tickets_end == prevBoard.num_tickets_end
 			) {
-				console.log('Rejected duplicate board');
+				$.toast('Current board is already saved');
 			}
 			else {
 				// only pull in this data after the duplicate check as the cached-start-tickets gets removed after saving
@@ -293,6 +292,9 @@
 				}
 
 				saveBoard(currentBoard, savedBoards);
+				$.toast('Current board saved');
+				console.log('Current board saved');
+				console.log(board);
 
 				// set cached tickets to see if ticket activity has occured between cache time and start of new board
 				localStorage.setItem('mh-spooky-shuffle-cached-tickets',req.memory_game.num_tickets);
