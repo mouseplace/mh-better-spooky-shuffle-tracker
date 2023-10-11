@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         🐭️ MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.1.2
+// @name         MouseHunt - Better Spooky Shuffle Tracker
+// @version      1.2.0
 // @description  Play Spooky Shuffle more easily.
 // @license      MIT
 // @author       bradp
@@ -164,7 +164,7 @@
 	}
 
 	.mh-spooky-shuffle-card-front {
-		opacity: .75;
+		opacity: .8;
 	}
 
 	.mh-spooky-shuffle-card-name {
