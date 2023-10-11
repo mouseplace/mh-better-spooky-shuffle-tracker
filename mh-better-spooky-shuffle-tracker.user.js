@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         MouseHunt - Better Spooky Shuffle Tracker
-// @version      1.2.0
+// @name         🐭️ MouseHunt - Better Spooky Shuffle Tracker
+// @version      1.2.1
 // @description  Play Spooky Shuffle more easily.
 // @license      MIT
 // @author       bradp
